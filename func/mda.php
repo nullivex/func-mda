@@ -67,10 +67,10 @@ function mda_exists(&$arr,$value,$path=null){
 //	to this functions eg: $arr = mda_flatten(mda_get($arr,'path1.path2.path3'),'row_id);
 function mda_flatten(&$arr,$keyname){
 	$rv = array();
-	foreach($arr as $key => $val){
-		if($key != $keyname) continue;
-		$rv[] = $val;
+	foreach($arr as $row){
+		if(!isset($row[$keyname])) continue;
+		$rv[] = $row[$keyname];
 	}
-	return $val;
+	return $rv;
 }
 	
