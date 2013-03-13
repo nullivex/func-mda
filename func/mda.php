@@ -54,12 +54,19 @@ function mda_del_value(&$arr,$value,$path=null){
 	return $val;
 }
 
-function mda_exists(&$arr,$value,$path=null){
+function mda_exists_value(&$arr,$value,$path=null){
 	$rv = false;
 	$var = _mda_get_var($path,func_get_args(),3);
 	eval('$val =& '.$var.';');
+	if(!is_array($val)) return false;
 	foreach(array_keys($val,$value) as $key) $rv = true;
 	return $rv;
+}
+
+function mda_exists(&$arr,$path){
+	$var = _mda_get_var($path,func_get_args(),3);
+	eval('$val = isset('.$var.') ? true : false;');
+	return $val;
 }
 
 //NOTE this does not take a path it takes a keyname
@@ -80,7 +87,7 @@ function implodei($join,$arr=array()){ //improved join that accepts arrays of jo
 	//improved functionality
 	$str = '';
 	foreach($arr as $v){
-		$j = mda_shift($join);
+		$j = array_shift($join);
 		$str .= $v.$j;
 	}
 	return rtrim($str,$j);
