@@ -5,7 +5,7 @@ define('MDA_DEBUG',false);
 function _mda_get_var($path=null,$args=array(),$req_arg_count=1,$strip_chars=true){
 	$var = '';
 	if(count($args) > $req_arg_count){
-			for($i=1;$i<$req_arg_count;$i++) array_shift($args);
+			for($i=1;$i<$req_arg_count;$i++) mda_shift($args);
 			$parts = $args;
 	}
 	else if(!is_array($path)) $parts = explode('.',$path);
@@ -80,8 +80,12 @@ function implodei($join,$arr=array()){ //improved join that accepts arrays of jo
 	//improved functionality
 	$str = '';
 	foreach($arr as $v){
-		$j = array_shift($join);
+		$j = mda_shift($join);
 		$str .= $v.$j;
 	}
 	return rtrim($str,$j);
+}
+
+function mda_shift($arr){
+	return array_shift($arr);
 }
