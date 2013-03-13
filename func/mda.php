@@ -73,4 +73,15 @@ function mda_flatten(&$arr,$keyname){
 	}
 	return $rv;
 }
-	
+
+function implodei($join,$arr=array()){ //improved join that accepts arrays of join
+	if(!is_array($arr)) return $arr;
+	if(!is_array($join)) return implode($join,$arr);
+	//improved functionality
+	$str = '';
+	foreach($arr as $v){
+		$j = array_shift($join);
+		$str .= $v.$j;
+	}
+	return rtrim($str,$j);
+}
