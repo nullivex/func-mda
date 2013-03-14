@@ -5,7 +5,7 @@ define('MDA_DEBUG',false);
 function _mda_get_var($path=null,$args=array(),$req_arg_count=1,$strip_chars=true){
 	$var = '';
 	if(count($args) > $req_arg_count){
-			for($i=1;$i<$req_arg_count;$i++) mda_shift($args);
+			for($i=1;$i<$req_arg_count;$i++) array_shift($args);
 			$parts = $args;
 	}
 	else if(!is_array($path)) $parts = explode('.',$path);
