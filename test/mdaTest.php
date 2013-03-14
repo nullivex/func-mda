@@ -62,7 +62,7 @@ class FuncMDATest extends PHPUNIT_Framework_TestCase {
 
 	public function testMDAShift(){
 		$array = array(1,2);
-		$this->assertEquals(1,mda_shift($array));
+		$this->assertEquals(1,array_shift($array));
 	}
 
 }
