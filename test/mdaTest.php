@@ -12,28 +12,28 @@ class FuncMDATest extends PHPUNIT_Framework_TestCase {
 
 	public function testMDASet(){
 		$test = self::$test;
-		mda_set($test,false,'test1');
-		mda_set($test,true,'test2.test3');
+		mda_set($test,'test1',false);
+		mda_set($test,'test2','test3',true);
 		$this->assertFalse(mda_get($test,'test1'));
 		$this->assertTrue(mda_get($test,'test2.test3'));
 	}
 
 	public function testMDAAdd(){
 		$test = self::$test;
-		mda_add($test,1,'test2');
-		$this->assertEquals(1,mda_get($test,'test2.0'));
+		mda_add($test,'test2',1);
+		$this->assertEquals(1,mda_get($test,'test2',0));
 	}
 
 	public function testMDADel(){
 		$test = self::$test;
-		mda_add($test,1,'test2');
+		mda_add($test,'test2',1);
 		mda_del($test,'test2.0');
 		$this->assertTrue(!isset($test['test2'][0]));
 	}
 
 	public function testMDADelValue(){
 		$test = self::$test;
-		mda_del_value($test,false,'test2');
+		mda_del_value($test,'test2',false);
 		$this->assertTrue(!isset($test['test2']['test3']));
 	}
 
@@ -45,7 +45,7 @@ class FuncMDATest extends PHPUNIT_Framework_TestCase {
 	}
 
 	public function testMDAExistsValue(){
-		$this->assertTrue(mda_exists_value(self::$test,false,'test2'));
+		$this->assertTrue(mda_exists_value(self::$test,'test2',false));
 	}
 
 	public function testMDAFlatten(){
