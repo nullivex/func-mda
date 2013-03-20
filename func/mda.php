@@ -1,16 +1,15 @@
 <?php
 
-define('MDA_DEBUG',false);
+// define('MDA_DEBUG',true);
 
-function _mda_get_var($path=null,$args=array(),$req_arg_count=1,$strip_chars=true){
+function _mda_get_var($args=array(),$strip_chars=true){
 	$var = '';
-	if(count($args) > $req_arg_count){
-			for($i=1;$i<$req_arg_count;$i++) array_shift($args);
-			$parts = $args;
+	$parts = array();
+	foreach($args as $v){
+		if(is_null($v)) continue;
+		$parts = array_merge($parts,explode('.',$v));
 	}
-	else if(!is_array($path)) $parts = explode('.',$path);
-	else if(is_array($path)) $parts = $path;
-	else $parts = array();
+	if(defined('MDA_DEBUG')) echo "MDA Parsed Path: ".implode($parts,'.')."\n";
 	foreach($parts as $part){
 			if($strip_chars && strspn($part,';$()[]{}=+@!% ') != 0){
 					if(defined('MDA_DEBUG') && MDA_DEBUG === true) throw new Exception('Invalid MDA path passed: '.implode('.',$parts));
@@ -24,39 +23,53 @@ function _mda_get_var($path=null,$args=array(),$req_arg_count=1,$strip_chars=tru
 }
 
 function mda_get(&$arr,$path=null){
-	$var = _mda_get_var($path,func_get_args(),2);
+	$args = func_get_args(); array_shift($args);
+	$var = _mda_get_var($args);
 	eval('$val = isset('.$var.') ? '.$var.' : null;');
 	return $val;
 }
 
-function mda_set(&$arr,$value=null,$path=null){
-	$var = _mda_get_var($path,func_get_args(),3);
+//VALUE WILL ALWAYS BE THE LAST ARG
+function mda_set(&$arr,$path=null){
+	$args = func_get_args(); array_shift($args);
+	$value = array_pop($args);
+	$var = _mda_get_var($args);
 	eval('$val = '.$var.' = $value;');
 	return $val;
 }
 
-function mda_add(&$arr,$value,$path=null){
-	$var = _mda_get_var($path,func_get_args(),3);
+//VALUE WILL ALWAYS BE THE LAST ARG
+function mda_add(&$arr,$path=null){
+	$args = func_get_args(); array_shift($args);
+	$value = array_pop($args);
+	$var = _mda_get_var($args);
 	eval('$val = '.$var.'[] = $value;');
 	return $val;
 }
 
 function mda_del(&$arr,$path=null){
-	$var = _mda_get_var($path,func_get_args(),2);
+	$args = func_get_args(); array_shift($args);
+	$var = _mda_get_var($args);
 	eval('unset('.$var.');');
 	return true;
 }
 
-function mda_del_value(&$arr,$value,$path=null){
-	$var = _mda_get_var($path,func_get_args(),3);
+//VALUE WILL ALWAYS BE THE LAST ARG
+function mda_del_value(&$arr,$path=null){
+	$args = func_get_args(); array_shift($args);
+	$value = array_pop($args);
+	$var = _mda_get_var($args);
 	eval('$val =& '.$var.';');
 	foreach(array_keys($val,$value) as $key) unset($val[$key]);
 	return $val;
 }
 
-function mda_exists_value(&$arr,$value,$path=null){
+//VALUE WILL ALWAYS BE THE LAST ARG
+function mda_exists_value(&$arr,$path=null){
 	$rv = false;
-	$var = _mda_get_var($path,func_get_args(),3);
+	$args = func_get_args(); array_shift($args);
+	$value = array_pop($args);
+	$var = _mda_get_var($args);
 	eval('$val =& '.$var.';');
 	if(!is_array($val)) return false;
 	foreach(array_keys($val,$value) as $key) $rv = true;
@@ -64,7 +77,8 @@ function mda_exists_value(&$arr,$value,$path=null){
 }
 
 function mda_exists(&$arr,$path){
-	$var = _mda_get_var($path,func_get_args(),3);
+	$args = func_get_args(); array_shift($args);
+	$var = _mda_get_var($args);
 	eval('$val = isset('.$var.') ? true : false;');
 	return $val;
 }
@@ -93,6 +107,7 @@ function implodei($join,$arr=array()){ //improved join that accepts arrays of jo
 	return rtrim($str,$j);
 }
 
+//THIS WILL NOT INCREASE THE ARRAYS POINTER (DOES NOT FUNCTION LIKE ARRAY_SHIFT)
 function mda_shift($arr){
 	return array_shift($arr);
 }
