@@ -2,7 +2,7 @@
 	 "name":				"openlss/func-mda"
 	,"homepage":			"http://openlss.org"
 	,"description":			"MDA (Multi Dimensional Array) access helpers for PHP"
-	,"license":				"LGPLv2"
+	,"license":				"LGPL-3.0+"
 	,"type":				"library"
 	,"keywords": [
 		 "array"
