@@ -1,0 +1,27 @@
+{
+	 "name":				"openlss/func-mda"
+	,"homepage":			"http://openlss.org"
+	,"description":			"MDA (Multi Dimensional Array) access helpers for PHP"
+	,"license":				"LGPLv2"
+	,"type":				"library"
+	,"keywords": [
+		 "array"
+		,"multi-dimensional array"
+		,"array helper"
+	]
+	,"authors": [
+		 {
+			 "name":		"Bryan Tong"
+			,"email":		"contact@nullivex.com"
+			,"homepage":	"http://bryantong.com"
+		}
+		,{
+			 "name":		"Tony Butler"
+			,"email":		"spudz76@gmail.com"
+			,"homepage":	"http://openlss.org"
+		}
+	]
+	,"require": {
+		"php":	">=5.3.2"
+	}
+}
