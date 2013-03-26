@@ -18,13 +18,10 @@
  *	GNU Lesser General Public License along with OpenLSS.
  *	If not, see <http://www.gnu.org/licenses/>.
 */
-namespace LSS;
-
 require_once(dirname(__DIR__).'/vendor/autoload.php');
-require('boot.php');
-ld('func/mda');
+require('lss_boot.php');
 
-class FuncMDATest extends \PHPUNIT_Framework_TestCase {
+class FuncMDATest extends PHPUNIT_Framework_TestCase {
 
 	static $test = array('test1'=>true,'test2'=>array('test3'=>false));
 
