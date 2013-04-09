@@ -85,4 +85,16 @@ class FuncMDATest extends PHPUNIT_Framework_TestCase {
 		$this->assertEquals(1,array_shift($array));
 	}
 
+	public function testMDAMerge(){
+		$array1 = array('testing'=>'test var');
+		$array2 = array('testing'=>'test var**');
+		$array3 = array('testing'=>'test var***');
+		$arr = mda_merge($array1);
+		$this->assertEquals('test var',$arr['testing']);
+		$arr = mda_merge($array1,$array2);
+		$this->assertEquals('test var*',$arr['testing']);
+		$arr = mda_merge($array1,$array2,$array3);
+		$this->assertEquals('test var***',$arr['testing']);
+	}
+
 }
