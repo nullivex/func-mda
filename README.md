@@ -96,3 +96,6 @@ NOTE: THIS WILL NOT INCREASE THE ARRAYS POINTER (DOES NOT FUNCTION LIKE ARRAY_SH
 Use this to shift anonymous arrays only it does not reference the original array
 Otherwise its the same as PHPs array_shift()
 
+### (array) mda_merge($arr,$arr[,$arr...])
+Will recursively merge arrays similar to array_merge
+DOES NOT function like array_merge_recursive which is wrong

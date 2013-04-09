@@ -130,3 +130,47 @@ function implodei($join,$arr=array()){ //improved join that accepts arrays of jo
 function mda_shift($arr){
 	return array_shift($arr);
 }
+
+/**
+ * array_merge_recursive does indeed merge arrays, but it converts values with duplicate
+ * keys to arrays rather than overwriting the value in the first array with the duplicate
+ * value in the second array, as array_merge does. I.e., with array_merge_recursive,
+ * this happens (documented behavior):
+ *
+ * array_merge_recursive(array('key' => 'org value'), array('key' => 'new value'));
+ *     => array('key' => array('org value', 'new value'));
+ *
+ * array_merge_recursive_distinct does not change the datatypes of the values in the arrays.
+ * Matching keys' values in the second array overwrite those in the first array, as is the
+ * case with array_merge, i.e.:
+ *
+ * array_merge_recursive_distinct(array('key' => 'org value'), array('key' => 'new value'));
+ *     => array('key' => array('new value'));
+ *
+ * Parameters are passed by reference, though only for performance reasons. They're not
+ * altered by this function.
+ *
+ * @param array $arr ....
+ * @return array
+ * @author Daniel <daniel (at) danielsmedegaardbuus (dot) dk>
+ * @author Gabriel Sobrinho <gabriel (dot) sobrinho (at) gmail (dot) com>
+ * @author Bryan Tong <contact@nullivex.com>
+ * In the OpenLSS version array_merge_recursive_distinct is renamed to mda_merge
+ * Also there is now a variable amount of merge variables
+ * References have been removed to prevent unpredictable results and to support variable
+ *     argument lists.
+ */
+function mda_merge(){
+	$args = func_get_args();
+	$merged = array_shift($args);
+	foreach($args as $arg){
+		foreach($arg as $key => $value){
+			if(is_array($value) && isset($merged[$key]) && is_array($merged[$key])){
+				$merged[$key] = mda_merge($merged[$key],$value);
+			} else {
+				$merged[$key] = $value;
+			}
+		}
+	}
+	return $merged;
+}
