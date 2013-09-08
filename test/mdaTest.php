@@ -23,7 +23,11 @@ require('lss_boot.php');
 
 class FuncMDATest extends PHPUNIT_Framework_TestCase {
 
-	static $test = array('test1'=>true,'test2'=>array('test3'=>false));
+	static $test = array(
+		  'test1'		=> true
+		 ,'test2'		=> array('test3'=>false)
+		 ,'testnull'	=> array('val'=>null)
+	 );
 
 	public function testMDAGet(){
 		$this->assertTrue(mda_get(self::$test,'test1'));
@@ -61,6 +65,7 @@ class FuncMDATest extends PHPUNIT_Framework_TestCase {
 		$this->assertTrue(mda_exists(self::$test,'test1'));
 		$this->assertTrue(mda_exists(self::$test,'test2'));
 		$this->assertTrue(mda_exists(self::$test,'test2.test3'));
+		$this->assertTrue(mda_exists(self::$test,'testnull.val'));
 		$this->assertFalse(mda_exists(self::$test,'test2.test3.test4'));
 	}
 

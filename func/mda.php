@@ -19,87 +19,66 @@
  *	If not, see <http://www.gnu.org/licenses/>.
  */
 
-// define('MDA_DEBUG',true);
+//define('MDA_DEBUG',true);
 
-function _mda_get_var($args=array(),$strip_chars=true){
-	$var = '';
-	$parts = array();
-	foreach($args as $v){
-		if(is_null($v)) continue;
-		$parts = array_merge($parts,explode('.',$v));
-	}
-	if(defined('MDA_DEBUG')) echo "MDA Parsed Path: ".implode($parts,'.')."\n";
-	foreach($parts as $part){
-			if($strip_chars && strspn($part,';$()[]{}=+@!% ') != 0){
-					if(defined('MDA_DEBUG') && MDA_DEBUG === true) throw new Exception('Invalid MDA path passed: '.implode('.',$parts));
-					else continue;
-			}
-			// if($strip_chars) $part = preg_replace('/[;$()\[\]\{\}\s=+@!%]+/','',$part);
-			$var .= "['".$part."']";
-	}
-	$var = '$arr'.$var;
-	return $var;
-}
+//action constants
+define('MDA_PATH_GET',0);
+define('MDA_PATH_EXISTS',1);
+define('MDA_PATH_SET',2);
+define('MDA_PATH_ADD',3);
+define('MDA_PATH_DEL',4);
+define('MDA_PATH_DEL_VALUE',5);
+define('MDA_PATH_EXISTS_VALUE',6);
 
+/*
+ * User friendly functions
+ */
 function mda_get(&$arr,$path=null){
-	$args = func_get_args(); array_shift($args);
-	$var = _mda_get_var($args);
-	eval('$val = isset('.$var.') ? '.$var.' : null;');
-	return $val;
+	$path = __mda_get_path(func_get_args());
+	return __mda_path_action($arr,$path,MDA_PATH_GET);
 }
 
 //VALUE WILL ALWAYS BE THE LAST ARG
 function mda_set(&$arr,$path=null){
-	$args = func_get_args(); array_shift($args);
-	$value = array_pop($args);
-	$var = _mda_get_var($args);
-	eval('$val = '.$var.' = $value;');
-	return $val;
+	$args = func_get_args();
+	$set = array_pop($args);
+	$path = __mda_get_path($args);
+	__mda_path_action($arr,$path,MDA_PATH_SET,$set);
+	return $set;
 }
 
 //VALUE WILL ALWAYS BE THE LAST ARG
 function mda_add(&$arr,$path=null){
-	$args = func_get_args(); array_shift($args);
-	$value = array_pop($args);
-	$var = _mda_get_var($args);
-	eval('$val = '.$var.'[] = $value;');
-	return $val;
+	$args = func_get_args();
+	$set = array_pop($args);
+	$path = __mda_get_path($args);
+	return __mda_path_action($arr,$path,MDA_PATH_ADD,$set);
 }
 
 function mda_del(&$arr,$path=null){
-	$args = func_get_args(); array_shift($args);
-	$var = _mda_get_var($args);
-	eval('unset('.$var.');');
-	return true;
+	$path = __mda_get_path(func_get_args());
+	return __mda_path_action($arr,$path,MDA_PATH_DEL);
 }
 
 //VALUE WILL ALWAYS BE THE LAST ARG
 function mda_del_value(&$arr,$path=null){
-	$args = func_get_args(); array_shift($args);
-	$value = array_pop($args);
-	$var = _mda_get_var($args);
-	eval('$val =& '.$var.';');
-	foreach(array_keys($val,$value) as $key) unset($val[$key]);
-	return $val;
+	$args = func_get_args();
+	$set = array_pop($args);
+	$path = __mda_get_path($args);
+	return __mda_path_action($arr,$path,MDA_PATH_DEL_VALUE,$set);
 }
 
 //VALUE WILL ALWAYS BE THE LAST ARG
 function mda_exists_value(&$arr,$path=null){
-	$rv = false;
-	$args = func_get_args(); array_shift($args);
-	$value = array_pop($args);
-	$var = _mda_get_var($args);
-	eval('$val =& '.$var.';');
-	if(!is_array($val)) return false;
-	foreach(array_keys($val,$value) as $key) $rv = true;
-	return $rv;
+	$args = func_get_args();
+	$set = array_pop($args);
+	$path = __mda_get_path($args);
+	return __mda_path_action($arr,$path,MDA_PATH_EXISTS_VALUE,$set);
 }
 
 function mda_exists(&$arr,$path){
-	$args = func_get_args(); array_shift($args);
-	$var = _mda_get_var($args);
-	eval('$val = isset('.$var.') ? true : false;');
-	return $val;
+	$path = __mda_get_path(func_get_args());
+	return __mda_path_action($arr,$path,MDA_PATH_EXISTS);
 }
 
 //NOTE this does not take a path it takes a keyname
@@ -174,3 +153,108 @@ function mda_merge(){
 	}
 	return $merged;
 }
+
+/*
+ * Internal functions
+ */
+function __mda_get_path($args=array(),$strip_chars=true){
+	array_shift($args);
+	$path = '';
+	$parts = array();
+	foreach($args as $v){
+		if(is_null($v)) continue;
+		$parts = array_merge($parts,explode('.',$v));
+	}
+	//if(defined('MDA_DEBUG')) echo "MDA Parsed Path: ".implode($parts,'.')."\n";
+	foreach($parts as $part){
+		if($strip_chars && strspn($part,';$()[]{}=+@!% ') != 0){
+			//if(defined('MDA_DEBUG') && MDA_DEBUG === true) throw new Exception('Invalid MDA path passed: '.implode('.',$parts));
+			//else continue;
+			continue;
+		}
+		// if($strip_chars) $part = preg_replace('/[;$()\[\]\{\}\s=+@!%]+/','',$part);
+		$path .= '.'.$part;
+	}
+	return trim($path,'.');
+}
+
+//this will return the referenced by the path (null for not exists, so exists check must be done separately
+function __mda_path_action(&$arr,$path,$act=MDA_PATH_GET,$set_val=null,$cur_path=null){
+	if(!is_array($arr)) return false;
+	//recursively walk the array and look for a path match
+	foreach($arr as $k => &$v){
+		$cpath = $cur_path.(is_null($cur_path) ? '' : '.').$k;
+		//if(defined('MDA_DEBUG') && MDA_DEBUG) echo "(search $path) == (current $cpath)... ";
+		//perform actions on array members
+		if(is_array($v) && $path != $cpath){
+			$t = &__mda_path_action($v,$path,$act,$set_val,$cpath);
+			switch($act){
+				case MDA_PATH_GET:
+					if(!is_null($t)) return $t;
+					break;
+				default:
+					if($t === true) return $t;
+					break;
+			}
+		} elseif(is_array($v) && $path == $cpath){
+			switch($act){
+				case MDA_PATH_EXISTS:
+					return true;
+					break;
+				case MDA_PATH_ADD:
+					$v[] = $set_val;
+					return true;
+					break;
+				case MDA_PATH_DEL:
+					unset($arr[$k]);
+					return true;
+					break;
+				case MDA_PATH_DEL_VALUE:
+					foreach(array_keys($v,$set_val,true) as $_v) unset($v[$_v]);
+					unset($_v);
+					return true;
+					break;
+				case MDA_PATH_EXISTS_VALUE:
+					if(count(array_keys($v,$set_val,true)) > 0) return true;
+					else return false;
+					break;
+				default:
+					throw new Exception('Invalid action on array member');
+					break;
+			}
+		}
+		//if we have a path match then grab the var
+		if($path == $cpath){
+			//if(defined('MDA_DEBUG') && MDA_DEBUG) echo "hit\n";
+			switch($act){
+				case MDA_PATH_GET:
+					return $v;
+					break;
+				case MDA_PATH_EXISTS:
+					return true;
+					break;
+				case MDA_PATH_SET:
+					$v = $set_val;
+					return true;
+				case MDA_PATH_DEL:
+					unset($arr[$k]);
+					break;
+				default:
+					throw new Exception('Invalid path action for value modification/retrieval');
+					break;
+			}
+		}
+		//if(defined('MDA_DEBUG') && MDA_DEBUG) echo "miss\n";
+	}
+	//retrn then proper value based on the action
+	switch($act){
+		case MDA_PATH_GET:
+			return null;
+			break;
+		default:
+			return false;
+			break;
+	}
+}
+
+
