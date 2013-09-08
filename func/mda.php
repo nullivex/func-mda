@@ -198,6 +198,9 @@ function __mda_path_action(&$arr,$path,$act=MDA_PATH_GET,$set_val=null,$cur_path
 			}
 		} elseif(is_array($v) && $path == $cpath){
 			switch($act){
+				case MDA_PATH_GET:
+					return $v;
+					break;
 				case MDA_PATH_EXISTS:
 					return true;
 					break;
