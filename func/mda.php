@@ -24,11 +24,10 @@
 //action constants
 define('MDA_PATH_GET',0);
 define('MDA_PATH_EXISTS',1);
-define('MDA_PATH_SET',2);
-define('MDA_PATH_ADD',3);
-define('MDA_PATH_DEL',4);
-define('MDA_PATH_DEL_VALUE',5);
-define('MDA_PATH_EXISTS_VALUE',6);
+define('MDA_PATH_ADD',2);
+define('MDA_PATH_DEL',3);
+define('MDA_PATH_DEL_VALUE',4);
+define('MDA_PATH_EXISTS_VALUE',5);
 
 /*
  * User friendly functions
@@ -39,11 +38,21 @@ function mda_get(&$arr,$path=null){
 }
 
 //VALUE WILL ALWAYS BE THE LAST ARG
+//	this is different than the rest of the functions
+//	it needs to actually traverse the path and create as it goes
 function mda_set(&$arr,$path=null){
 	$args = func_get_args();
 	$set = array_pop($args);
 	$path = __mda_get_path($args);
-	__mda_path_action($arr,$path,MDA_PATH_SET,$set);
+	//traverse the path creating as we go and setting the last value
+	$parts = explode('.',$path);
+	$lpart = array_pop($parts);
+	foreach($parts as $k => $part){
+		if(!isset($arr[$part])) $arr[$part] = array();
+		$arr = &$arr[$part];
+	}
+	//set the value
+	$arr[$lpart] = $set;
 	return $set;
 }
 
@@ -236,9 +245,6 @@ function __mda_path_action(&$arr,$path,$act=MDA_PATH_GET,$set_val=null,$cur_path
 				case MDA_PATH_EXISTS:
 					return true;
 					break;
-				case MDA_PATH_SET:
-					$v = $set_val;
-					return true;
 				case MDA_PATH_DEL:
 					unset($arr[$k]);
 					break;
